@@ -1,3 +1,5 @@
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -14,7 +16,14 @@ public class Nimbus {
      */
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        ArrayList<Task> tasks = new ArrayList<>();
+        Storage storage = new Storage(Path.of("data", "nimbus.txt"));
+        ArrayList<Task> tasks;
+        try {
+            tasks = storage.load();
+        } catch (IOException e) {
+            tasks = new ArrayList<>();
+            System.out.println("I couldn't load saved tasks, so we'll start with an empty list.");
+        }
         System.out.println(DIVIDER);
         System.out.println("Hello! I'm Nimbus.");
         System.out.println("What can I do for you?");
@@ -26,8 +35,11 @@ public class Nimbus {
             }
             try {
                 processCommand(command, tasks);
+                storage.save(tasks);
             } catch (NimbusException e) {
                 System.out.println("I couldn't do that: " + e.getMessage());
+            } catch (IOException e) {
+                System.out.println("I couldn't save your tasks: " + e.getMessage());
             }
             System.out.println(DIVIDER);
         }

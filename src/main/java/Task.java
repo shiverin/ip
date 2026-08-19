@@ -29,6 +29,11 @@ public class Task {
         return isDone ? "X" : " ";
     }
 
+    /** Returns whether this task is completed. */
+    public boolean isDone() {
+        return isDone;
+    }
+
     @Override
     public String toString() {
         return "[" + getStatusIcon() + "] " + description;
