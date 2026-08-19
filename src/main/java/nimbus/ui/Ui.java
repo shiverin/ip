@@ -1,5 +1,9 @@
+package nimbus.ui;
+
 import java.util.List;
 import java.util.Scanner;
+
+import nimbus.task.Task;
 
 /** Handles all console interaction with the user. */
 public class Ui implements AutoCloseable {

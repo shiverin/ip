@@ -1,3 +1,5 @@
+package nimbus.task;
+
 /**
  * Represents a task and its completion status.
  */

@@ -1,3 +1,5 @@
+package nimbus.parser;
+
 /** Converts raw user input into recognised commands. */
 public class Parser {
     /** Parses a line of user input. */

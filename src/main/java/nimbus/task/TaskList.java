@@ -1,6 +1,10 @@
+package nimbus.task;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import nimbus.NimbusException;
 
 /** Owns the task collection and provides task operations. */
 public class TaskList {

@@ -1,3 +1,5 @@
+package nimbus.storage;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -5,6 +7,11 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+
+import nimbus.task.Deadline;
+import nimbus.task.Event;
+import nimbus.task.Task;
+import nimbus.task.Todo;
 
 /** Loads and saves tasks in a local data file. */
 public class Storage {
@@ -49,14 +56,14 @@ public class Storage {
     private String encodeTask(Task task) {
         String type;
         ArrayList<String> fields = new ArrayList<>();
-        fields.add(task.description);
+        fields.add(task.getDescription());
         if (task instanceof Deadline deadline) {
             type = "D";
             fields.add(deadline.getStorageDate());
         } else if (task instanceof Event event) {
             type = "E";
-            fields.add(event.from);
-            fields.add(event.to);
+            fields.add(event.getFrom());
+            fields.add(event.getTo());
         } else {
             type = "T";
         }

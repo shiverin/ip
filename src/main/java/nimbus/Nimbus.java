@@ -1,6 +1,19 @@
+package nimbus;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.format.DateTimeParseException;
+
+import nimbus.parser.CommandType;
+import nimbus.parser.ParsedCommand;
+import nimbus.parser.Parser;
+import nimbus.storage.Storage;
+import nimbus.task.Deadline;
+import nimbus.task.Event;
+import nimbus.task.Task;
+import nimbus.task.TaskList;
+import nimbus.task.Todo;
+import nimbus.ui.Ui;
 
 /** Runs Nimbus, a personal task assistant. */
 public class Nimbus {

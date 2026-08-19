@@ -1,3 +1,5 @@
+package nimbus.task;
+
 /** Represents a task that occurs over a period. */
 public class Event extends Task {
     protected final String from;
@@ -8,6 +10,16 @@ public class Event extends Task {
         super(description);
         this.from = from;
         this.to = to;
+    }
+
+    /** Returns the event start text. */
+    public String getFrom() {
+        return from;
+    }
+
+    /** Returns the event end text. */
+    public String getTo() {
+        return to;
     }
 
     @Override
