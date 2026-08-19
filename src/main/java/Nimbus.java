@@ -41,14 +41,34 @@ public class Nimbus {
                 task.markAsNotDone();
                 System.out.println("OK, I've marked this task as not done yet:");
                 System.out.println("  " + task);
+            } else if (command.startsWith("todo ")) {
+                addTask(tasks, new Todo(command.substring(5)));
+            } else if (command.startsWith("deadline ")) {
+                int delimiterIndex = command.indexOf(" /by ");
+                String description = command.substring(9, delimiterIndex);
+                String by = command.substring(delimiterIndex + 5);
+                addTask(tasks, new Deadline(description, by));
+            } else if (command.startsWith("event ")) {
+                int fromIndex = command.indexOf(" /from ");
+                int toIndex = command.indexOf(" /to ");
+                String description = command.substring(6, fromIndex);
+                String from = command.substring(fromIndex + 7, toIndex);
+                String to = command.substring(toIndex + 5);
+                addTask(tasks, new Event(description, from, to));
             } else {
-                tasks.add(new Task(command));
-                System.out.println("Added: " + command);
+                addTask(tasks, new Todo(command));
             }
             System.out.println(DIVIDER);
         }
         System.out.println("Bye. Hope to see you again soon!");
         System.out.println(DIVIDER);
         scanner.close();
+    }
+
+    private static void addTask(ArrayList<Task> tasks, Task task) {
+        tasks.add(task);
+        System.out.println("Got it. I've added this task:");
+        System.out.println("  " + task);
+        System.out.println("Now you have " + tasks.size() + " tasks in the list.");
     }
 }
