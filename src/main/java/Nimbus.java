@@ -37,25 +37,24 @@ public class Nimbus {
     }
 
     private static void processCommand(String command, ArrayList<Task> tasks) throws NimbusException {
-        if (command.equals("list")) {
-            showTasks(tasks);
-        } else if (command.startsWith("mark ")) {
-            updateTaskStatus(command.substring(5), tasks, true);
-        } else if (command.startsWith("unmark ")) {
-            updateTaskStatus(command.substring(7), tasks, false);
-        } else if (command.startsWith("delete ")) {
-            deleteTask(command.substring(7), tasks);
-        } else if (command.equals("todo") || command.startsWith("todo ")) {
-            String description = command.length() > 4 ? command.substring(5).trim() : "";
-            requireNonEmpty(description, "Give the todo a description after 'todo'.");
-            addTask(tasks, new Todo(description));
-        } else if (command.equals("deadline") || command.startsWith("deadline ")) {
-            addDeadline(command, tasks);
-        } else if (command.equals("event") || command.startsWith("event ")) {
-            addEvent(command, tasks);
-        } else {
-            throw new NimbusException("I don't recognise that command.");
+        switch (CommandType.from(command)) {
+            case LIST -> showTasks(tasks);
+            case MARK -> updateTaskStatus(argumentAfter(command, 5), tasks, true);
+            case UNMARK -> updateTaskStatus(argumentAfter(command, 7), tasks, false);
+            case DELETE -> deleteTask(argumentAfter(command, 7), tasks);
+            case TODO -> {
+                String description = argumentAfter(command, 5);
+                requireNonEmpty(description, "Give the todo a description after 'todo'.");
+                addTask(tasks, new Todo(description));
+            }
+            case DEADLINE -> addDeadline(command, tasks);
+            case EVENT -> addEvent(command, tasks);
+            case UNKNOWN -> throw new NimbusException("I don't recognise that command.");
         }
+    }
+
+    private static String argumentAfter(String command, int startIndex) {
+        return command.length() > startIndex ? command.substring(startIndex).trim() : "";
     }
 
     private static void showTasks(ArrayList<Task> tasks) {
