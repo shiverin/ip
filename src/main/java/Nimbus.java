@@ -14,7 +14,7 @@ public class Nimbus {
      */
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        ArrayList<String> tasks = new ArrayList<>();
+        ArrayList<Task> tasks = new ArrayList<>();
         System.out.println(DIVIDER);
         System.out.println("Hello! I'm Nimbus.");
         System.out.println("What can I do for you?");
@@ -29,8 +29,20 @@ public class Nimbus {
                 for (int i = 0; i < tasks.size(); i++) {
                     System.out.println((i + 1) + ". " + tasks.get(i));
                 }
+            } else if (command.startsWith("mark ")) {
+                int taskNumber = Integer.parseInt(command.substring(5));
+                Task task = tasks.get(taskNumber - 1);
+                task.markAsDone();
+                System.out.println("Nice! I've marked this task as done:");
+                System.out.println("  " + task);
+            } else if (command.startsWith("unmark ")) {
+                int taskNumber = Integer.parseInt(command.substring(7));
+                Task task = tasks.get(taskNumber - 1);
+                task.markAsNotDone();
+                System.out.println("OK, I've marked this task as not done yet:");
+                System.out.println("  " + task);
             } else {
-                tasks.add(command);
+                tasks.add(new Task(command));
                 System.out.println("Added: " + command);
             }
             System.out.println(DIVIDER);
