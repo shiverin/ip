@@ -21,6 +21,14 @@ class ParserTest {
     }
 
     @Test
+    void parse_findCommand_returnsFindTypeAndKeyword() {
+        ParsedCommand command = parser.parse("find book");
+
+        assertEquals(CommandType.FIND, command.type());
+        assertEquals("book", command.argument());
+    }
+
+    @Test
     void parse_emptyInput_returnsUnknown() {
         assertEquals(CommandType.UNKNOWN, parser.parse("   ").type());
     }
