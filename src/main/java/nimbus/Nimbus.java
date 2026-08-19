@@ -68,6 +68,7 @@ public class Nimbus {
             case TODO -> addTodo(command.argument());
             case DEADLINE -> addDeadline(command.fullText());
             case EVENT -> addEvent(command.fullText());
+            case FIND -> findTasks(command.argument());
             case UNKNOWN -> throw new NimbusException("I don't recognise that command.");
             case BYE -> throw new IllegalStateException("Bye must be handled by the command loop");
         }
@@ -126,6 +127,11 @@ public class Nimbus {
         requireNonEmpty(from, "Give the event a start after '/from'.");
         requireNonEmpty(to, "Give the event an end after '/to'.");
         addTask(new Event(description, from, to));
+    }
+
+    private void findTasks(String keyword) throws NimbusException {
+        requireNonEmpty(keyword, "Give me a keyword to find.");
+        ui.showTasks("Here are the matching tasks in your list:", tasks.find(keyword));
     }
 
     private void addTask(Task task) {

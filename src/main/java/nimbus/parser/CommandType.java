@@ -2,7 +2,7 @@ package nimbus.parser;
 
 /** Identifies the operation requested by a user command. */
 public enum CommandType {
-    LIST, MARK, UNMARK, DELETE, TODO, DEADLINE, EVENT, BYE, UNKNOWN;
+    LIST, MARK, UNMARK, DELETE, TODO, DEADLINE, EVENT, FIND, BYE, UNKNOWN;
 
     /** Returns the command type identified by the first word of the input. */
     public static CommandType from(String command) {
