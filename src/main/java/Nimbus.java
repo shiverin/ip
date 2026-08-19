@@ -1,144 +1,133 @@
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.Scanner;
 
-/**
- * Runs Nimbus, a personal task assistant.
- */
+/** Runs Nimbus, a personal task assistant. */
 public class Nimbus {
-    private static final String DIVIDER = "____________________________________________________________";
+    private final Parser parser;
+    private final Storage storage;
+    private final TaskList tasks;
+    private final Ui ui;
 
-    /**
-     * Greets the user, echoes commands, and exits when the user enters {@code bye}.
-     *
-     * @param args Command-line arguments, which are not used.
-     */
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        Storage storage = new Storage(Path.of("data", "nimbus.txt"));
-        ArrayList<Task> tasks;
+    /** Creates Nimbus with storage at the supplied relative file path. */
+    public Nimbus(Path filePath) {
+        parser = new Parser();
+        storage = new Storage(filePath);
+        ui = new Ui();
+        TaskList loadedTasks;
         try {
-            tasks = storage.load();
+            loadedTasks = new TaskList(storage.load());
         } catch (IOException e) {
-            tasks = new ArrayList<>();
-            System.out.println("I couldn't load saved tasks, so we'll start with an empty list.");
+            loadedTasks = new TaskList();
+            ui.show("I couldn't load saved tasks, so we'll start with an empty list.");
         }
-        System.out.println(DIVIDER);
-        System.out.println("Hello! I'm Nimbus.");
-        System.out.println("What can I do for you?");
-        System.out.println(DIVIDER);
-        while (scanner.hasNextLine()) {
-            String command = scanner.nextLine().trim();
-            if (command.equals("bye")) {
+        tasks = loadedTasks;
+    }
+
+    /** Runs the command loop until the user exits or input ends. */
+    public void run() {
+        ui.showWelcome();
+        while (ui.hasNextCommand()) {
+            ParsedCommand command = parser.parse(ui.readCommand());
+            if (command.type() == CommandType.BYE) {
                 break;
             }
             try {
-                processCommand(command, tasks);
-                storage.save(tasks);
+                execute(command);
+                storage.save(tasks.asList());
             } catch (NimbusException e) {
-                System.out.println("I couldn't do that: " + e.getMessage());
+                ui.showError(e.getMessage());
             } catch (IOException e) {
-                System.out.println("I couldn't save your tasks: " + e.getMessage());
+                ui.showError("I couldn't save your tasks: " + e.getMessage());
             }
-            System.out.println(DIVIDER);
+            ui.showLine();
         }
-        System.out.println("Bye. Hope to see you again soon!");
-        System.out.println(DIVIDER);
-        scanner.close();
+        ui.showGoodbye();
+        ui.close();
     }
 
-    private static void processCommand(String command, ArrayList<Task> tasks) throws NimbusException {
-        switch (CommandType.from(command)) {
-            case LIST -> showTasks(tasks);
-            case MARK -> updateTaskStatus(argumentAfter(command, 5), tasks, true);
-            case UNMARK -> updateTaskStatus(argumentAfter(command, 7), tasks, false);
-            case DELETE -> deleteTask(argumentAfter(command, 7), tasks);
-            case TODO -> {
-                String description = argumentAfter(command, 5);
-                requireNonEmpty(description, "Give the todo a description after 'todo'.");
-                addTask(tasks, new Todo(description));
-            }
-            case DEADLINE -> addDeadline(command, tasks);
-            case EVENT -> addEvent(command, tasks);
+    private void execute(ParsedCommand command) throws NimbusException {
+        switch (command.type()) {
+            case LIST -> ui.showTasks("Here are the tasks in your list:", tasks.asList());
+            case MARK -> updateTaskStatus(command.argument(), true);
+            case UNMARK -> updateTaskStatus(command.argument(), false);
+            case DELETE -> deleteTask(command.argument());
+            case TODO -> addTodo(command.argument());
+            case DEADLINE -> addDeadline(command.fullText());
+            case EVENT -> addEvent(command.fullText());
             case UNKNOWN -> throw new NimbusException("I don't recognise that command.");
+            case BYE -> throw new IllegalStateException("Bye must be handled by the command loop");
         }
     }
 
-    private static String argumentAfter(String command, int startIndex) {
-        return command.length() > startIndex ? command.substring(startIndex).trim() : "";
-    }
-
-    private static void showTasks(ArrayList<Task> tasks) {
-        System.out.println("Here are the tasks in your list:");
-        for (int i = 0; i < tasks.size(); i++) {
-            System.out.println((i + 1) + ". " + tasks.get(i));
-        }
-    }
-
-    private static void updateTaskStatus(String argument, ArrayList<Task> tasks, boolean isDone)
-            throws NimbusException {
-        Task task = getTask(argument, tasks);
+    private void updateTaskStatus(String argument, boolean isDone) throws NimbusException {
+        Task task = tasks.get(parseTaskNumber(argument));
         if (isDone) {
             task.markAsDone();
-            System.out.println("Nice! I've marked this task as done:");
+            ui.show("Nice! I've marked this task as done:");
         } else {
             task.markAsNotDone();
-            System.out.println("OK, I've marked this task as not done yet:");
+            ui.show("OK, I've marked this task as not done yet:");
         }
-        System.out.println("  " + task);
+        ui.show("  " + task);
     }
 
-    private static Task getTask(String argument, ArrayList<Task> tasks) throws NimbusException {
-        try {
-            int taskNumber = Integer.parseInt(argument.trim());
-            if (taskNumber < 1 || taskNumber > tasks.size()) {
-                throw new NimbusException("Choose a task number from the list.");
-            }
-            return tasks.get(taskNumber - 1);
-        } catch (NumberFormatException e) {
-            throw new NimbusException("Enter a valid task number.");
-        }
+    private void deleteTask(String argument) throws NimbusException {
+        Task task = tasks.delete(parseTaskNumber(argument));
+        ui.show("Noted. I've removed this task:");
+        ui.show("  " + task);
+        ui.show("Now you have " + tasks.size() + " tasks in the list.");
     }
 
-    private static void deleteTask(String argument, ArrayList<Task> tasks) throws NimbusException {
-        Task task = getTask(argument, tasks);
-        tasks.remove(task);
-        System.out.println("Noted. I've removed this task:");
-        System.out.println("  " + task);
-        System.out.println("Now you have " + tasks.size() + " tasks in the list.");
+    private void addTodo(String description) throws NimbusException {
+        requireNonEmpty(description, "Give the todo a description after 'todo'.");
+        addTask(new Todo(description));
     }
 
-    private static void addDeadline(String command, ArrayList<Task> tasks) throws NimbusException {
-        int delimiterIndex = command.indexOf(" /by ");
+    private void addDeadline(String fullCommand) throws NimbusException {
+        int delimiterIndex = fullCommand.indexOf(" /by ");
         if (delimiterIndex < 0) {
-            throw new NimbusException("Use: deadline DESCRIPTION /by DATE.");
+            throw new NimbusException("Use: deadline DESCRIPTION /by YYYY-MM-DD.");
         }
-        String description = command.substring(9, delimiterIndex).trim();
-        String by = command.substring(delimiterIndex + 5).trim();
+        String description = fullCommand.substring(9, delimiterIndex).trim();
+        String by = fullCommand.substring(delimiterIndex + 5).trim();
         requireNonEmpty(description, "Give the deadline a description.");
         requireNonEmpty(by, "Give the deadline a date after '/by'.");
         try {
-            addTask(tasks, new Deadline(description, by));
+            addTask(new Deadline(description, by));
         } catch (DateTimeParseException e) {
             throw new NimbusException("Use a deadline date in YYYY-MM-DD format.");
         }
     }
 
-    private static void addEvent(String command, ArrayList<Task> tasks) throws NimbusException {
-        int fromIndex = command.indexOf(" /from ");
-        int toIndex = command.indexOf(" /to ");
+    private void addEvent(String fullCommand) throws NimbusException {
+        int fromIndex = fullCommand.indexOf(" /from ");
+        int toIndex = fullCommand.indexOf(" /to ");
         if (fromIndex < 0 || toIndex < 0 || toIndex <= fromIndex) {
             throw new NimbusException("Use: event DESCRIPTION /from START /to END.");
         }
-        String description = command.substring(6, fromIndex).trim();
-        String from = command.substring(fromIndex + 7, toIndex).trim();
-        String to = command.substring(toIndex + 5).trim();
+        String description = fullCommand.substring(6, fromIndex).trim();
+        String from = fullCommand.substring(fromIndex + 7, toIndex).trim();
+        String to = fullCommand.substring(toIndex + 5).trim();
         requireNonEmpty(description, "Give the event a description.");
         requireNonEmpty(from, "Give the event a start after '/from'.");
         requireNonEmpty(to, "Give the event an end after '/to'.");
-        addTask(tasks, new Event(description, from, to));
+        addTask(new Event(description, from, to));
+    }
+
+    private void addTask(Task task) {
+        tasks.add(task);
+        ui.show("Got it. I've added this task:");
+        ui.show("  " + task);
+        ui.show("Now you have " + tasks.size() + " tasks in the list.");
+    }
+
+    private static int parseTaskNumber(String argument) throws NimbusException {
+        try {
+            return Integer.parseInt(argument);
+        } catch (NumberFormatException e) {
+            throw new NimbusException("Enter a valid task number.");
+        }
     }
 
     private static void requireNonEmpty(String value, String message) throws NimbusException {
@@ -147,10 +136,8 @@ public class Nimbus {
         }
     }
 
-    private static void addTask(ArrayList<Task> tasks, Task task) {
-        tasks.add(task);
-        System.out.println("Got it. I've added this task:");
-        System.out.println("  " + task);
-        System.out.println("Now you have " + tasks.size() + " tasks in the list.");
+    /** Starts Nimbus using its default data file. */
+    public static void main(String[] args) {
+        new Nimbus(Path.of("data", "nimbus.txt")).run();
     }
 }
