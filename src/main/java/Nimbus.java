@@ -43,6 +43,8 @@ public class Nimbus {
             updateTaskStatus(command.substring(5), tasks, true);
         } else if (command.startsWith("unmark ")) {
             updateTaskStatus(command.substring(7), tasks, false);
+        } else if (command.startsWith("delete ")) {
+            deleteTask(command.substring(7), tasks);
         } else if (command.equals("todo") || command.startsWith("todo ")) {
             String description = command.length() > 4 ? command.substring(5).trim() : "";
             requireNonEmpty(description, "Give the todo a description after 'todo'.");
@@ -86,6 +88,14 @@ public class Nimbus {
         } catch (NumberFormatException e) {
             throw new NimbusException("Enter a valid task number.");
         }
+    }
+
+    private static void deleteTask(String argument, ArrayList<Task> tasks) throws NimbusException {
+        Task task = getTask(argument, tasks);
+        tasks.remove(task);
+        System.out.println("Noted. I've removed this task:");
+        System.out.println("  " + task);
+        System.out.println("Now you have " + tasks.size() + " tasks in the list.");
     }
 
     private static void addDeadline(String command, ArrayList<Task> tasks) throws NimbusException {
