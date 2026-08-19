@@ -52,7 +52,7 @@ public class Storage {
         fields.add(task.description);
         if (task instanceof Deadline deadline) {
             type = "D";
-            fields.add(deadline.by);
+            fields.add(deadline.getStorageDate());
         } else if (task instanceof Event event) {
             type = "E";
             fields.add(event.from);

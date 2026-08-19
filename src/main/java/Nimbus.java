@@ -1,5 +1,6 @@
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -118,7 +119,11 @@ public class Nimbus {
         String by = command.substring(delimiterIndex + 5).trim();
         requireNonEmpty(description, "Give the deadline a description.");
         requireNonEmpty(by, "Give the deadline a date after '/by'.");
-        addTask(tasks, new Deadline(description, by));
+        try {
+            addTask(tasks, new Deadline(description, by));
+        } catch (DateTimeParseException e) {
+            throw new NimbusException("Use a deadline date in YYYY-MM-DD format.");
+        }
     }
 
     private static void addEvent(String command, ArrayList<Task> tasks) throws NimbusException {
