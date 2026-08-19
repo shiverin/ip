@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Scanner;
 
 /**
@@ -13,6 +14,7 @@ public class Nimbus {
      */
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+        ArrayList<String> tasks = new ArrayList<>();
         System.out.println(DIVIDER);
         System.out.println("Hello! I'm Nimbus.");
         System.out.println("What can I do for you?");
@@ -22,7 +24,15 @@ public class Nimbus {
             if (command.equals("bye")) {
                 break;
             }
-            System.out.println(command);
+            if (command.equals("list")) {
+                System.out.println("Here are the tasks in your list:");
+                for (int i = 0; i < tasks.size(); i++) {
+                    System.out.println((i + 1) + ". " + tasks.get(i));
+                }
+            } else {
+                tasks.add(command);
+                System.out.println("Added: " + command);
+            }
             System.out.println(DIVIDER);
         }
         System.out.println("Bye. Hope to see you again soon!");
