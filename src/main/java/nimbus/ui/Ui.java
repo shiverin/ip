@@ -13,8 +13,7 @@ public class Ui implements AutoCloseable {
     /** Displays the welcome message. */
     public void showWelcome() {
         showLine();
-        show("Hello! I'm Nimbus.");
-        show("What can I do for you?");
+        show("Hello! I'm Nimbus.", "What can I do for you?");
         showLine();
     }
 
@@ -28,9 +27,11 @@ public class Ui implements AutoCloseable {
         return scanner.nextLine();
     }
 
-    /** Displays a message. */
-    public void show(String message) {
-        System.out.println(message);
+    /** Displays one or more messages, each on a new line. */
+    public void show(String... messages) {
+        for (String message : messages) {
+            System.out.println(message);
+        }
     }
 
     /** Displays the task list with one-based numbering. */
