@@ -29,6 +29,14 @@ class ParserTest {
     }
 
     @Test
+    void parse_updateCommand_returnsUpdateTypeAndArgument() {
+        ParsedCommand command = parser.parse("update 2 revised description");
+
+        assertEquals(CommandType.UPDATE, command.type());
+        assertEquals("2 revised description", command.argument());
+    }
+
+    @Test
     void parse_emptyInput_returnsUnknown() {
         assertEquals(CommandType.UNKNOWN, parser.parse("   ").type());
     }

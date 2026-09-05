@@ -1,30 +1,11 @@
-# Duke User Guide
+# Nimbus User Guide
 
-// Update the title above to match the actual product name
+Nimbus manages todos, deadlines, and events through typed commands.
 
-// Product screenshot goes here
+## Updating a task
 
-// Product intro goes here
+Use `update TASK_NUMBER NEW_DESCRIPTION` to change a task description without deleting the task.
 
-## Adding deadlines
+Example: `update 2 submit final report`
 
-// Describe the action and its outcome.
-
-// Give examples of usage
-
-Example: `keyword (optional arguments)`
-
-// A description of the expected outcome goes here
-
-```
-expected output
-```
-
-## Feature ABC
-
-// Feature details
-
-
-## Feature XYZ
-
-// Feature details
+Nimbus preserves the task type, completion status, and any associated dates or times.
