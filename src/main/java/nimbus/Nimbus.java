@@ -3,6 +3,9 @@ package nimbus;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.format.DateTimeParseException;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import nimbus.parser.CommandType;
 import nimbus.parser.ParsedCommand;
@@ -150,15 +153,14 @@ public class Nimbus {
                 + "\nNow you have " + tasks.size() + " tasks in the list.";
     }
 
-    private static String formatTasks(String heading, java.util.List<Task> tasks) {
-        StringBuilder response = new StringBuilder(heading);
-        for (int i = 0; i < tasks.size(); i++) {
-            response.append(System.lineSeparator())
-                    .append(i + 1)
-                    .append(". ")
-                    .append(tasks.get(i));
+    private static String formatTasks(String heading, List<Task> tasks) {
+        if (tasks.isEmpty()) {
+            return heading;
         }
-        return response.toString();
+        String formattedTasks = IntStream.range(0, tasks.size())
+                .mapToObj(index -> (index + 1) + ". " + tasks.get(index))
+                .collect(Collectors.joining(System.lineSeparator()));
+        return heading + System.lineSeparator() + formattedTasks;
     }
 
     private static int parseTaskNumber(String argument) throws NimbusException {
