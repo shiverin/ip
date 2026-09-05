@@ -4,7 +4,7 @@ package nimbus.task;
  * Represents a task and its completion status.
  */
 public class Task {
-    protected final String description;
+    protected String description;
     private boolean isDone;
 
     /**
@@ -39,6 +39,13 @@ public class Task {
     /** Returns the task description. */
     public String getDescription() {
         return description;
+    }
+
+    /** Replaces the task description. */
+    public void setDescription(String description) {
+        assert description != null : "Task description must not be null";
+        assert !description.isBlank() : "Task description must not be blank";
+        this.description = description;
     }
 
     @Override

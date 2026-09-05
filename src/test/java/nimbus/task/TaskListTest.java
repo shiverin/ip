@@ -45,4 +45,14 @@ class TaskListTest {
         assertEquals(1, tasks.size());
         assertEquals("second", tasks.get(1).getDescription());
     }
+
+    @Test
+    void setDescription_validDescription_updatesTask() throws NimbusException {
+        TaskList tasks = new TaskList();
+        tasks.add(new Todo("old description"));
+
+        tasks.get(1).setDescription("new description");
+
+        assertEquals("new description", tasks.get(1).getDescription());
+    }
 }

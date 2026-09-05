@@ -79,6 +79,7 @@ public class Nimbus {
             case MARK -> updateTaskStatus(command.argument(), true);
             case UNMARK -> updateTaskStatus(command.argument(), false);
             case DELETE -> deleteTask(command.argument());
+            case UPDATE -> updateTask(command.argument());
             case TODO -> addTodo(command.argument());
             case DEADLINE -> addDeadline(command.fullText());
             case EVENT -> addEvent(command.fullText());
@@ -103,6 +104,19 @@ public class Nimbus {
         Task task = tasks.delete(parseTaskNumber(argument));
         return "Noted. I've removed this task:\n  " + task
                 + "\nNow you have " + tasks.size() + " tasks in the list.";
+    }
+
+    private String updateTask(String argument) throws NimbusException {
+        int separatorIndex = argument.indexOf(' ');
+        if (separatorIndex < 0) {
+            throw new NimbusException("Use: update TASK_NUMBER NEW_DESCRIPTION.");
+        }
+        int taskNumber = parseTaskNumber(argument.substring(0, separatorIndex));
+        String description = argument.substring(separatorIndex + 1).trim();
+        requireNonEmpty(description, "Give the task a new description.");
+        Task task = tasks.get(taskNumber);
+        task.setDescription(description);
+        return "Got it. I've updated this task:\n  " + task;
     }
 
     private String addTodo(String description) throws NimbusException {
