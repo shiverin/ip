@@ -8,7 +8,7 @@ import nimbus.NimbusException;
 
 /** Owns the task collection and provides task operations. */
 public class TaskList {
-    private final ArrayList<Task> tasks;
+    private final List<Task> tasks;
 
     /** Creates an empty task list. */
     public TaskList() {
@@ -16,8 +16,8 @@ public class TaskList {
     }
 
     /** Creates a task list containing the supplied tasks. */
-    public TaskList(ArrayList<Task> tasks) {
-        this.tasks = tasks;
+    public TaskList(List<Task> tasks) {
+        this.tasks = new ArrayList<>(tasks);
     }
 
     /** Adds a task. */
@@ -35,7 +35,8 @@ public class TaskList {
 
     /** Removes and returns the task at the supplied one-based number. */
     public Task delete(int taskNumber) throws NimbusException {
-        return tasks.remove(tasks.indexOf(get(taskNumber)));
+        get(taskNumber);
+        return tasks.remove(taskNumber - 1);
     }
 
     /** Returns the number of tasks. */
