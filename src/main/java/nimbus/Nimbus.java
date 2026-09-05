@@ -24,6 +24,7 @@ public class Nimbus {
 
     /** Creates Nimbus with storage at the supplied relative file path. */
     public Nimbus(Path filePath) {
+        assert filePath != null : "Storage path must not be null";
         parser = new Parser();
         storage = new Storage(filePath);
         ui = new Ui();
@@ -53,6 +54,7 @@ public class Nimbus {
 
     /** Returns Nimbus's response to a command and persists any resulting task changes. */
     public String getResponse(String input) {
+        assert input != null : "Command input must not be null";
         ParsedCommand command = parser.parse(input);
         if (command.type() == CommandType.BYE) {
             return "Bye. Hope to see you again soon!";
@@ -142,6 +144,7 @@ public class Nimbus {
     }
 
     private String addTask(Task task) {
+        assert task != null : "Task to add must not be null";
         tasks.add(task);
         return "Got it. I've added this task:\n  " + task
                 + "\nNow you have " + tasks.size() + " tasks in the list.";
