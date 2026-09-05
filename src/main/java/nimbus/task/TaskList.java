@@ -17,11 +17,13 @@ public class TaskList {
 
     /** Creates a task list containing the supplied tasks. */
     public TaskList(ArrayList<Task> tasks) {
+        assert tasks != null : "Task collection must not be null";
         this.tasks = tasks;
     }
 
     /** Adds a task. */
     public void add(Task task) {
+        assert task != null : "Task to add must not be null";
         tasks.add(task);
     }
 
