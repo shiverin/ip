@@ -9,11 +9,11 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -26,30 +26,50 @@ public class Main extends Application {
     @Override
     public void start(Stage stage) {
         Label title = new Label("Nimbus");
-        title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
+        title.getStyleClass().add("app-title");
+        Label subtitle = new Label("Your calm place for busy days");
+        subtitle.getStyleClass().add("app-subtitle");
+        Region headerSpacer = new Region();
+        HBox.setHgrow(headerSpacer, Priority.ALWAYS);
+        Label status = new Label("●  Ready");
+        status.getStyleClass().add("status-label");
+        VBox titleGroup = new VBox(2, title, subtitle);
+        HBox header = new HBox(12, titleGroup, headerSpacer, status);
+        header.getStyleClass().add("header");
 
         ScrollPane dialogScrollPane = new ScrollPane(dialogContainer);
         dialogScrollPane.setFitToWidth(true);
         dialogScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        dialogScrollPane.setStyle("-fx-background-color: transparent;");
+        dialogScrollPane.getStyleClass().add("dialog-scroll-pane");
         dialogContainer.setPadding(new Insets(12));
+        dialogContainer.getStyleClass().add("dialog-container");
         dialogContainer.heightProperty().addListener((observable, oldValue, newValue) ->
                 dialogScrollPane.setVvalue(1.0));
 
         Button sendButton = new Button("Send");
         sendButton.setDefaultButton(true);
+        sendButton.getStyleClass().add("send-button");
         sendButton.setOnAction(event -> handleUserInput());
-        userInput.setPromptText("Enter a command...");
+        userInput.setPromptText("Type a command, e.g. todo read a book");
+        userInput.getStyleClass().add("command-input");
         userInput.setOnAction(event -> handleUserInput());
         HBox inputBar = new HBox(8, userInput, sendButton);
+        inputBar.getStyleClass().add("input-bar");
         HBox.setHgrow(userInput, Priority.ALWAYS);
 
-        BorderPane root = new BorderPane(dialogScrollPane, title, null, inputBar, null);
-        root.setPadding(new Insets(16));
-        BorderPane.setMargin(title, new Insets(0, 0, 12, 0));
-        BorderPane.setMargin(inputBar, new Insets(12, 0, 0, 0));
+        Label hint = new Label("Try: list  •  todo  •  deadline  •  event  •  find  •  update  •  bye");
+        hint.getStyleClass().add("command-hint");
+        VBox composer = new VBox(7, inputBar, hint);
 
-        stage.setScene(new Scene(root, 640, 520));
+        BorderPane root = new BorderPane(dialogScrollPane, header, null, composer, null);
+        root.getStyleClass().add("app-root");
+        root.setPadding(new Insets(16));
+        BorderPane.setMargin(header, new Insets(0, 0, 12, 0));
+        BorderPane.setMargin(composer, new Insets(12, 0, 0, 0));
+
+        Scene scene = new Scene(root, 640, 520);
+        scene.getStylesheets().add(Main.class.getResource("/nimbus/style.css").toExternalForm());
+        stage.setScene(scene);
         stage.setMinWidth(480);
         stage.setMinHeight(360);
         stage.setTitle("Nimbus");
@@ -76,17 +96,16 @@ public class Main extends Application {
 
     private void addMessage(String message, MessageSender sender) {
         boolean isFromUser = sender == MessageSender.USER;
-        TextArea bubble = new TextArea(message);
-        bubble.setEditable(false);
+        Label speaker = new Label(isFromUser ? "You" : "Nimbus");
+        speaker.getStyleClass().add("speaker-label");
+        Label bubble = new Label(message);
         bubble.setWrapText(true);
-        bubble.setFocusTraversable(false);
         bubble.setMaxWidth(460);
-        bubble.setPrefRowCount(Math.max(1, message.lines().toList().size()));
-        bubble.setStyle(isFromUser
-                ? "-fx-control-inner-background: #dbeafe; -fx-font-size: 14px;"
-                : "-fx-control-inner-background: #f3f4f6; -fx-font-size: 14px;");
-        HBox row = new HBox(bubble);
-        row.setStyle(isFromUser ? "-fx-alignment: center-right;" : "-fx-alignment: center-left;");
+        bubble.getStyleClass().addAll("message-bubble", isFromUser ? "user-bubble" : "nimbus-bubble");
+        VBox messageGroup = new VBox(4, speaker, bubble);
+        messageGroup.setMaxWidth(460);
+        HBox row = new HBox(messageGroup);
+        row.getStyleClass().add(isFromUser ? "user-row" : "nimbus-row");
         dialogContainer.getChildren().add(row);
     }
 
