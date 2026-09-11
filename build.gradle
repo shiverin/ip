@@ -21,11 +21,19 @@ checkstyle {
 
 dependencies {
     String jUnitVersion = '5.14.4'
+    String javafxVersion = '25'
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:${jUnitVersion}"
 
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jUnitVersion}"
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.14.4'
+
+    // The JavaFX plugin supplies macOS ARM natives on the development machine.
+    // Include the distinct Windows and Linux natives so the release JAR is not tied to macOS.
+    ['base', 'graphics', 'controls'].each { module ->
+        runtimeOnly "org.openjfx:javafx-${module}:${javafxVersion}:linux"
+        runtimeOnly "org.openjfx:javafx-${module}:${javafxVersion}:win"
+    }
 }
 
 test {
