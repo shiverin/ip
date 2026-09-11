@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -71,5 +72,25 @@ class NimbusTest {
         Nimbus nimbus = new Nimbus(blockingFile.resolve("tasks.txt"));
 
         assertTrue(nimbus.getWelcomeMessage().contains("fog rolled in"));
+    }
+
+    @Test
+    void getWelcomeMessage_damagedRecord_skipsRecordAndIncludesWarning() throws IOException {
+        Path storageFile = temporaryDirectory.resolve("tasks.txt");
+        Nimbus firstSession = new Nimbus(storageFile);
+        firstSession.getResponse("todo keep this task");
+        Files.writeString(storageFile, "damaged record", StandardOpenOption.APPEND);
+
+        Nimbus recoveredSession = new Nimbus(storageFile);
+
+        assertTrue(recoveredSession.getWelcomeMessage().contains("skipped 1 damaged saved record"));
+        assertTrue(recoveredSession.getResponse("list").contains("keep this task"));
+    }
+
+    @Test
+    void getResponse_blankInput_returnsHelpfulError() {
+        Nimbus nimbus = new Nimbus(temporaryDirectory.resolve("tasks.txt"));
+
+        assertEquals("A little turbulence: Please type a command.", nimbus.getResponse("   "));
     }
 }

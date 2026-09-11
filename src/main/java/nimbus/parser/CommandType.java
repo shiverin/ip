@@ -6,7 +6,7 @@ public enum CommandType {
 
     /** Returns the command type identified by the first word of the input. */
     public static CommandType from(String command) {
-        String keyword = command.split(" ", 2)[0];
+        String keyword = command.split("\\s+", 2)[0];
         try {
             return CommandType.valueOf(keyword.toUpperCase());
         } catch (IllegalArgumentException e) {
