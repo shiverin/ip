@@ -1,5 +1,6 @@
 package nimbus;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
@@ -20,5 +21,23 @@ class NimbusTest {
 
         assertTrue(response.contains("[T][ ] new description"));
         assertTrue(nimbus.getResponse("list").contains("[T][ ] new description"));
+    }
+
+    @Test
+    void getResponse_deadlineWithoutDescription_returnsUsageError() {
+        Nimbus nimbus = new Nimbus(temporaryDirectory.resolve("tasks.txt"));
+
+        String response = nimbus.getResponse("deadline /by 2026-01-01");
+
+        assertEquals("I couldn't do that: Use: deadline DESCRIPTION /by YYYY-MM-DD.", response);
+    }
+
+    @Test
+    void getResponse_eventWithoutDescription_returnsUsageError() {
+        Nimbus nimbus = new Nimbus(temporaryDirectory.resolve("tasks.txt"));
+
+        String response = nimbus.getResponse("event /from Monday /to Tuesday");
+
+        assertEquals("I couldn't do that: Use: event DESCRIPTION /from START /to END.", response);
     }
 }

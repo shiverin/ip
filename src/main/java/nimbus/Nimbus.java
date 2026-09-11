@@ -81,8 +81,8 @@ public class Nimbus {
             case DELETE -> deleteTask(command.argument());
             case UPDATE -> updateTask(command.argument());
             case TODO -> addTodo(command.argument());
-            case DEADLINE -> addDeadline(command.fullText());
-            case EVENT -> addEvent(command.fullText());
+            case DEADLINE -> addDeadline(command.argument());
+            case EVENT -> addEvent(command.argument());
             case FIND -> findTasks(command.argument());
             case UNKNOWN -> throw new NimbusException("I don't recognise that command.");
             case BYE -> throw new IllegalStateException("Bye must be handled before command execution");
@@ -124,13 +124,14 @@ public class Nimbus {
         return addTask(new Todo(description));
     }
 
-    private String addDeadline(String fullCommand) throws NimbusException {
-        int delimiterIndex = fullCommand.indexOf(" /by ");
+    private String addDeadline(String arguments) throws NimbusException {
+        String byMarker = " /by ";
+        int delimiterIndex = arguments.indexOf(byMarker);
         if (delimiterIndex < 0) {
             throw new NimbusException("Use: deadline DESCRIPTION /by YYYY-MM-DD.");
         }
-        String description = fullCommand.substring(9, delimiterIndex).trim();
-        String by = fullCommand.substring(delimiterIndex + 5).trim();
+        String description = arguments.substring(0, delimiterIndex).trim();
+        String by = arguments.substring(delimiterIndex + byMarker.length()).trim();
         requireNonEmpty(description, "Give the deadline a description.");
         requireNonEmpty(by, "Give the deadline a date after '/by'.");
         try {
@@ -140,15 +141,17 @@ public class Nimbus {
         }
     }
 
-    private String addEvent(String fullCommand) throws NimbusException {
-        int fromIndex = fullCommand.indexOf(" /from ");
-        int toIndex = fullCommand.indexOf(" /to ");
+    private String addEvent(String arguments) throws NimbusException {
+        String fromMarker = " /from ";
+        String toMarker = " /to ";
+        int fromIndex = arguments.indexOf(fromMarker);
+        int toIndex = arguments.indexOf(toMarker);
         if (fromIndex < 0 || toIndex < 0 || toIndex <= fromIndex) {
             throw new NimbusException("Use: event DESCRIPTION /from START /to END.");
         }
-        String description = fullCommand.substring(6, fromIndex).trim();
-        String from = fullCommand.substring(fromIndex + 7, toIndex).trim();
-        String to = fullCommand.substring(toIndex + 5).trim();
+        String description = arguments.substring(0, fromIndex).trim();
+        String from = arguments.substring(fromIndex + fromMarker.length(), toIndex).trim();
+        String to = arguments.substring(toIndex + toMarker.length()).trim();
         requireNonEmpty(description, "Give the event a description.");
         requireNonEmpty(from, "Give the event a start after '/from'.");
         requireNonEmpty(to, "Give the event an end after '/to'.");
