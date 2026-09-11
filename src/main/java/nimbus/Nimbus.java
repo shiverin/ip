@@ -20,10 +20,14 @@ import nimbus.ui.Ui;
 
 /** Runs Nimbus, a personal task assistant. */
 public class Nimbus {
+    private static final String WELCOME_MESSAGE = "Hello! I'm Nimbus.\nWhat can I do for you?";
+    private static final String LOAD_WARNING = "I couldn't load saved tasks, so we'll start with an empty list.";
+
     private final Parser parser;
     private final Storage storage;
     private final TaskList tasks;
     private final Ui ui;
+    private final String startupWarning;
 
     /** Creates Nimbus with storage at the supplied relative file path. */
     public Nimbus(Path filePath) {
@@ -32,22 +36,27 @@ public class Nimbus {
         storage = new Storage(filePath);
         ui = new Ui();
         TaskList loadedTasks;
+        String loadingWarning = null;
         try {
             loadedTasks = new TaskList(storage.load());
         } catch (IOException e) {
             loadedTasks = new TaskList();
-            ui.show("I couldn't load saved tasks, so we'll start with an empty list.");
+            loadingWarning = LOAD_WARNING;
         }
         tasks = loadedTasks;
+        startupWarning = loadingWarning;
     }
 
     /** Runs the command loop until the user exits or input ends. */
     public void run() {
-        ui.showWelcome();
+        ui.showLine();
+        ui.show(getWelcomeMessage());
+        ui.showLine();
         while (ui.hasNextCommand()) {
             String command = ui.readCommand();
-            ui.show(getResponse(command));
-            if (parser.parse(command).type() == CommandType.BYE) {
+            Response response = getResponseWithStatus(command);
+            ui.show(response.message());
+            if (response.isExit()) {
                 break;
             }
             ui.showLine();
@@ -57,47 +66,60 @@ public class Nimbus {
 
     /** Returns Nimbus's response to a command and persists any resulting task changes. */
     public String getResponse(String input) {
+        return getResponseWithStatus(input).message();
+    }
+
+    /** Returns Nimbus's response and whether the command ends the session. */
+    public Response getResponseWithStatus(String input) {
         assert input != null : "Command input must not be null";
         ParsedCommand command = parser.parse(input);
         if (command.type() == CommandType.BYE) {
-            return "Bye. Hope to see you again soon!";
+            return new Response("Bye. Hope to see you again soon!", true);
         }
         try {
-            String response = execute(command);
+            String message = execute(command);
             storage.save(tasks.asList());
-            return response;
+            return new Response(message, false);
         } catch (NimbusException e) {
-            return "I couldn't do that: " + e.getMessage();
+            return new Response("I couldn't do that: " + e.getMessage(), false);
         } catch (IOException e) {
-            return "I couldn't save your tasks: " + e.getMessage();
+            return new Response("I couldn't save your tasks: " + e.getMessage(), false);
         }
+    }
+
+    /** Returns the greeting and any warning produced while loading saved tasks. */
+    public String getWelcomeMessage() {
+        return startupWarning == null
+                ? WELCOME_MESSAGE
+                : WELCOME_MESSAGE + "\n" + startupWarning;
     }
 
     private String execute(ParsedCommand command) throws NimbusException {
         return switch (command.type()) {
             case LIST -> formatTasks("Here are the tasks in your list:", tasks.asList());
-            case MARK -> updateTaskStatus(command.argument(), true);
-            case UNMARK -> updateTaskStatus(command.argument(), false);
+            case MARK -> markTaskAsDone(command.argument());
+            case UNMARK -> markTaskAsNotDone(command.argument());
             case DELETE -> deleteTask(command.argument());
             case UPDATE -> updateTask(command.argument());
             case TODO -> addTodo(command.argument());
-            case DEADLINE -> addDeadline(command.fullText());
-            case EVENT -> addEvent(command.fullText());
+            case DEADLINE -> addDeadline(command.argument());
+            case EVENT -> addEvent(command.argument());
             case FIND -> findTasks(command.argument());
             case UNKNOWN -> throw new NimbusException("I don't recognise that command.");
             case BYE -> throw new IllegalStateException("Bye must be handled before command execution");
         };
     }
 
-    private String updateTaskStatus(String argument, boolean isDone) throws NimbusException {
+    private String markTaskAsDone(String argument) throws NimbusException {
         Task task = tasks.get(parseTaskNumber(argument));
-        if (isDone) {
-            task.markAsDone();
-            return "Nice! I've marked this task as done:\n  " + task;
-        } else {
-            task.markAsNotDone();
-            return "OK, I've marked this task as not done yet:\n  " + task;
-        }
+        task.markAsDone();
+        return "Nice! I've marked this task as done:\n  " + task;
+    }
+
+    private String markTaskAsNotDone(String argument) throws NimbusException {
+        Task task = tasks.get(parseTaskNumber(argument));
+        task.markAsNotDone();
+        return "OK, I've marked this task as not done yet:\n  " + task;
     }
 
     private String deleteTask(String argument) throws NimbusException {
@@ -124,13 +146,14 @@ public class Nimbus {
         return addTask(new Todo(description));
     }
 
-    private String addDeadline(String fullCommand) throws NimbusException {
-        int delimiterIndex = fullCommand.indexOf(" /by ");
+    private String addDeadline(String arguments) throws NimbusException {
+        String byMarker = " /by ";
+        int delimiterIndex = arguments.indexOf(byMarker);
         if (delimiterIndex < 0) {
             throw new NimbusException("Use: deadline DESCRIPTION /by YYYY-MM-DD.");
         }
-        String description = fullCommand.substring(9, delimiterIndex).trim();
-        String by = fullCommand.substring(delimiterIndex + 5).trim();
+        String description = arguments.substring(0, delimiterIndex).trim();
+        String by = arguments.substring(delimiterIndex + byMarker.length()).trim();
         requireNonEmpty(description, "Give the deadline a description.");
         requireNonEmpty(by, "Give the deadline a date after '/by'.");
         try {
@@ -140,15 +163,17 @@ public class Nimbus {
         }
     }
 
-    private String addEvent(String fullCommand) throws NimbusException {
-        int fromIndex = fullCommand.indexOf(" /from ");
-        int toIndex = fullCommand.indexOf(" /to ");
+    private String addEvent(String arguments) throws NimbusException {
+        String fromMarker = " /from ";
+        String toMarker = " /to ";
+        int fromIndex = arguments.indexOf(fromMarker);
+        int toIndex = arguments.indexOf(toMarker);
         if (fromIndex < 0 || toIndex < 0 || toIndex <= fromIndex) {
             throw new NimbusException("Use: event DESCRIPTION /from START /to END.");
         }
-        String description = fullCommand.substring(6, fromIndex).trim();
-        String from = fullCommand.substring(fromIndex + 7, toIndex).trim();
-        String to = fullCommand.substring(toIndex + 5).trim();
+        String description = arguments.substring(0, fromIndex).trim();
+        String from = arguments.substring(fromIndex + fromMarker.length(), toIndex).trim();
+        String to = arguments.substring(toIndex + toMarker.length()).trim();
         requireNonEmpty(description, "Give the event a description.");
         requireNonEmpty(from, "Give the event a start after '/from'.");
         requireNonEmpty(to, "Give the event an end after '/to'.");
@@ -189,6 +214,10 @@ public class Nimbus {
         if (value.isEmpty()) {
             throw new NimbusException(message);
         }
+    }
+
+    /** Contains a command response and its session-exit state. */
+    public record Response(String message, boolean isExit) {
     }
 
     /** Starts Nimbus using its default data file. */

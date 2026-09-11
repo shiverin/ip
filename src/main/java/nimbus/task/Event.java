@@ -5,7 +5,13 @@ public class Event extends Task {
     protected final String from;
     protected final String to;
 
-    /** Creates an event task. */
+    /**
+     * Creates an event task.
+     *
+     * @param description Description of the task.
+     * @param from Start of the event.
+     * @param to End of the event.
+     */
     public Event(String description, String from, String to) {
         super(description);
         this.from = from;
