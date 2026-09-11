@@ -32,7 +32,7 @@ class NimbusTest {
 
         String response = nimbus.getResponse("deadline /by 2026-01-01");
 
-        assertEquals("I couldn't do that: Use: deadline DESCRIPTION /by YYYY-MM-DD.", response);
+        assertEquals("A little turbulence: Use: deadline DESCRIPTION /by YYYY-MM-DD.", response);
     }
 
     @Test
@@ -41,7 +41,7 @@ class NimbusTest {
 
         String response = nimbus.getResponse("event /from Monday /to Tuesday");
 
-        assertEquals("I couldn't do that: Use: event DESCRIPTION /from START /to END.", response);
+        assertEquals("A little turbulence: Use: event DESCRIPTION /from START /to END.", response);
     }
 
     @Test
@@ -51,7 +51,7 @@ class NimbusTest {
         Nimbus.Response response = nimbus.getResponseWithStatus("bye now");
 
         assertTrue(response.isExit());
-        assertEquals("Bye. Hope to see you again soon!", response.message());
+        assertEquals("The sky is clear for now. See you next time!", response.message());
     }
 
     @Test
@@ -70,6 +70,6 @@ class NimbusTest {
 
         Nimbus nimbus = new Nimbus(blockingFile.resolve("tasks.txt"));
 
-        assertTrue(nimbus.getWelcomeMessage().contains("couldn't load saved tasks"));
+        assertTrue(nimbus.getWelcomeMessage().contains("fog rolled in"));
     }
 }
