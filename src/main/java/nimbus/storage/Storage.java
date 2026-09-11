@@ -54,21 +54,21 @@ public class Storage {
     }
 
     private String encodeTask(Task task) {
-        String type;
+        String typeCode;
         ArrayList<String> fields = new ArrayList<>();
         fields.add(task.getDescription());
         if (task instanceof Deadline deadline) {
-            type = "D";
+            typeCode = "D";
             fields.add(deadline.getStorageDate());
         } else if (task instanceof Event event) {
-            type = "E";
+            typeCode = "E";
             fields.add(event.getFrom());
             fields.add(event.getTo());
         } else {
-            type = "T";
+            typeCode = "T";
         }
         String encodedFields = fields.stream().map(Storage::encode).reduce((a, b) -> a + "|" + b).orElse("");
-        return type + "|" + (task.isDone() ? "1" : "0") + "|" + encodedFields;
+        return typeCode + "|" + (task.isDone() ? "1" : "0") + "|" + encodedFields;
     }
 
     private Task decodeTask(String line) {

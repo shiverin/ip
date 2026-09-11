@@ -15,7 +15,11 @@ public class TaskList {
         this(new ArrayList<>());
     }
 
-    /** Creates a task list containing the supplied tasks. */
+    /**
+     * Creates a task list containing the supplied tasks.
+     *
+     * @param tasks Tasks to include initially.
+     */
     public TaskList(List<Task> tasks) {
         assert tasks != null : "Task collection must not be null";
         this.tasks = new ArrayList<>(tasks);
