@@ -20,10 +20,14 @@ import nimbus.ui.Ui;
 
 /** Runs Nimbus, a personal task assistant. */
 public class Nimbus {
+    private static final String WELCOME_MESSAGE = "Hello! I'm Nimbus.\nWhat can I do for you?";
+    private static final String LOAD_WARNING = "I couldn't load saved tasks, so we'll start with an empty list.";
+
     private final Parser parser;
     private final Storage storage;
     private final TaskList tasks;
     private final Ui ui;
+    private final String startupWarning;
 
     /** Creates Nimbus with storage at the supplied relative file path. */
     public Nimbus(Path filePath) {
@@ -32,22 +36,27 @@ public class Nimbus {
         storage = new Storage(filePath);
         ui = new Ui();
         TaskList loadedTasks;
+        String loadingWarning = null;
         try {
             loadedTasks = new TaskList(storage.load());
         } catch (IOException e) {
             loadedTasks = new TaskList();
-            ui.show("I couldn't load saved tasks, so we'll start with an empty list.");
+            loadingWarning = LOAD_WARNING;
         }
         tasks = loadedTasks;
+        startupWarning = loadingWarning;
     }
 
     /** Runs the command loop until the user exits or input ends. */
     public void run() {
-        ui.showWelcome();
+        ui.showLine();
+        ui.show(getWelcomeMessage());
+        ui.showLine();
         while (ui.hasNextCommand()) {
             String command = ui.readCommand();
-            ui.show(getResponse(command));
-            if (parser.parse(command).type() == CommandType.BYE) {
+            Response response = getResponseWithStatus(command);
+            ui.show(response.message());
+            if (response.isExit()) {
                 break;
             }
             ui.showLine();
@@ -57,20 +66,32 @@ public class Nimbus {
 
     /** Returns Nimbus's response to a command and persists any resulting task changes. */
     public String getResponse(String input) {
+        return getResponseWithStatus(input).message();
+    }
+
+    /** Returns Nimbus's response and whether the command ends the session. */
+    public Response getResponseWithStatus(String input) {
         assert input != null : "Command input must not be null";
         ParsedCommand command = parser.parse(input);
         if (command.type() == CommandType.BYE) {
-            return "Bye. Hope to see you again soon!";
+            return new Response("Bye. Hope to see you again soon!", true);
         }
         try {
-            String response = execute(command);
+            String message = execute(command);
             storage.save(tasks.asList());
-            return response;
+            return new Response(message, false);
         } catch (NimbusException e) {
-            return "I couldn't do that: " + e.getMessage();
+            return new Response("I couldn't do that: " + e.getMessage(), false);
         } catch (IOException e) {
-            return "I couldn't save your tasks: " + e.getMessage();
+            return new Response("I couldn't save your tasks: " + e.getMessage(), false);
         }
+    }
+
+    /** Returns the greeting and any warning produced while loading saved tasks. */
+    public String getWelcomeMessage() {
+        return startupWarning == null
+                ? WELCOME_MESSAGE
+                : WELCOME_MESSAGE + "\n" + startupWarning;
     }
 
     private String execute(ParsedCommand command) throws NimbusException {
@@ -192,6 +213,10 @@ public class Nimbus {
         if (value.isEmpty()) {
             throw new NimbusException(message);
         }
+    }
+
+    /** Contains a command response and its session-exit state. */
+    public record Response(String message, boolean isExit) {
     }
 
     /** Starts Nimbus using its default data file. */

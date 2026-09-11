@@ -55,7 +55,7 @@ public class Main extends Application {
         stage.setTitle("Nimbus");
         stage.show();
 
-        addMessage("Hello! I'm Nimbus.\nWhat can I do for you?", false);
+        addMessage(nimbus.getWelcomeMessage(), false);
         userInput.requestFocus();
     }
 
@@ -66,8 +66,9 @@ public class Main extends Application {
         }
         addMessage(input, true);
         userInput.clear();
-        addMessage(nimbus.getResponse(input), false);
-        if (input.equalsIgnoreCase("bye")) {
+        Nimbus.Response response = nimbus.getResponseWithStatus(input);
+        addMessage(response.message(), false);
+        if (response.isExit()) {
             userInput.setDisable(true);
             Platform.runLater(() -> ((Stage) userInput.getScene().getWindow()).close());
         }
