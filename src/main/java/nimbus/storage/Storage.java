@@ -22,18 +22,20 @@ public class Storage {
         this.filePath = filePath;
     }
 
-    /** Loads all valid task records, creating an empty file when necessary. */
-    public ArrayList<Task> load() throws IOException {
+    /** Loads all valid task records and reports records that could not be recovered. */
+    public LoadResult load() throws IOException {
         createFileIfMissing();
         ArrayList<Task> tasks = new ArrayList<>();
+        int skippedRecordCount = 0;
         for (String line : Files.readAllLines(filePath, StandardCharsets.UTF_8)) {
             try {
                 tasks.add(decodeTask(line));
             } catch (IllegalArgumentException ignored) {
                 // Skip a corrupted record while preserving the remaining valid tasks.
+                skippedRecordCount++;
             }
         }
-        return tasks;
+        return new LoadResult(tasks, skippedRecordCount);
     }
 
     /** Replaces the data file contents with the supplied tasks. */
@@ -104,5 +106,13 @@ public class Storage {
 
     private static String decode(String value) {
         return new String(Base64.getUrlDecoder().decode(value), StandardCharsets.UTF_8);
+    }
+
+    /** Contains recovered tasks and the number of damaged records skipped while loading. */
+    public record LoadResult(List<Task> tasks, int skippedRecordCount) {
+        /** Creates an immutable snapshot of a storage load. */
+        public LoadResult {
+            tasks = List.copyOf(tasks);
+        }
     }
 }

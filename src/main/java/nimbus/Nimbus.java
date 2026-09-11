@@ -24,6 +24,8 @@ public class Nimbus {
             + "What shall we clear from your sky today?";
     private static final String LOAD_WARNING = "A little fog rolled in while I loaded your saved tasks. "
             + "We'll start with a clear list.";
+    private static final String DAMAGED_RECORD_WARNING = "I recovered your tasks but skipped %d damaged "
+            + "saved record%s.";
 
     private final Parser parser;
     private final Storage storage;
@@ -40,7 +42,12 @@ public class Nimbus {
         TaskList loadedTasks;
         String loadingWarning = null;
         try {
-            loadedTasks = new TaskList(storage.load());
+            Storage.LoadResult loadResult = storage.load();
+            loadedTasks = new TaskList(loadResult.tasks());
+            if (loadResult.skippedRecordCount() > 0) {
+                String pluralSuffix = loadResult.skippedRecordCount() == 1 ? "" : "s";
+                loadingWarning = DAMAGED_RECORD_WARNING.formatted(loadResult.skippedRecordCount(), pluralSuffix);
+            }
         } catch (IOException e) {
             loadedTasks = new TaskList();
             loadingWarning = LOAD_WARNING;
@@ -74,6 +81,9 @@ public class Nimbus {
     /** Returns Nimbus's response and whether the command ends the session. */
     public Response getResponseWithStatus(String input) {
         assert input != null : "Command input must not be null";
+        if (input.isBlank()) {
+            return new Response("A little turbulence: Please type a command.", false);
+        }
         ParsedCommand command = parser.parse(input);
         if (command.type() == CommandType.BYE) {
             return new Response("The sky is clear for now. See you next time!", true);

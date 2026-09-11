@@ -4,7 +4,7 @@ package nimbus.parser;
 public record ParsedCommand(CommandType type, String fullText) {
     /** Returns the trimmed text following the command keyword. */
     public String argument() {
-        int separatorIndex = fullText.indexOf(' ');
-        return separatorIndex < 0 ? "" : fullText.substring(separatorIndex + 1).trim();
+        String[] parts = fullText.split("\\s+", 2);
+        return parts.length < 2 ? "" : parts[1].trim();
     }
 }

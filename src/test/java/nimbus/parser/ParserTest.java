@@ -40,4 +40,12 @@ class ParserTest {
     void parse_emptyInput_returnsUnknown() {
         assertEquals(CommandType.UNKNOWN, parser.parse("   ").type());
     }
+
+    @Test
+    void parse_tabSeparatedCommand_returnsTypeAndArgument() {
+        ParsedCommand command = parser.parse("todo\tread book");
+
+        assertEquals(CommandType.TODO, command.type());
+        assertEquals("read book", command.argument());
+    }
 }
