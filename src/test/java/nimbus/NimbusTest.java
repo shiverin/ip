@@ -93,4 +93,61 @@ class NimbusTest {
 
         assertEquals("A little turbulence: Please type a command.", nimbus.getResponse("   "));
     }
+
+    @Test
+    void getResponse_taskLifecycle_updatesListAndPersistsChanges() {
+        Path storageFile = temporaryDirectory.resolve("tasks.txt");
+        Nimbus nimbus = new Nimbus(storageFile);
+
+        nimbus.getResponse("todo read book");
+        nimbus.getResponse("deadline submit report /by 2026-09-18");
+        assertTrue(nimbus.getResponse("mark 2").contains("[D][X] submit report"));
+        assertTrue(nimbus.getResponse("unmark 2").contains("[D][ ] submit report"));
+        assertTrue(nimbus.getResponse("delete 1").contains("read book"));
+
+        Nimbus nextSession = new Nimbus(storageFile);
+        String list = nextSession.getResponse("list");
+        assertTrue(list.contains("[D][ ] submit report"));
+        assertFalse(list.contains("read book"));
+    }
+
+    @Test
+    void getResponse_findCommand_returnsOnlyMatchingTasks() {
+        Nimbus nimbus = new Nimbus(temporaryDirectory.resolve("tasks.txt"));
+        nimbus.getResponse("todo Read book");
+        nimbus.getResponse("todo buy milk");
+
+        String response = nimbus.getResponse("find BOOK");
+
+        assertTrue(response.contains("Read book"));
+        assertFalse(response.contains("buy milk"));
+    }
+
+    @Test
+    void getResponse_invalidDeadlineDate_returnsFormatError() {
+        Nimbus nimbus = new Nimbus(temporaryDirectory.resolve("tasks.txt"));
+
+        String response = nimbus.getResponse("deadline submit report /by next Friday");
+
+        assertEquals("A little turbulence: Use a deadline date in YYYY-MM-DD format.", response);
+    }
+
+    @Test
+    void getResponse_outOfRangeTaskNumber_returnsSelectionError() {
+        Nimbus nimbus = new Nimbus(temporaryDirectory.resolve("tasks.txt"));
+        nimbus.getResponse("todo only task");
+
+        String response = nimbus.getResponse("mark 2");
+
+        assertEquals("A little turbulence: Choose a task number from the list.", response);
+    }
+
+    @Test
+    void getResponse_unknownCommand_returnsHintError() {
+        Nimbus nimbus = new Nimbus(temporaryDirectory.resolve("tasks.txt"));
+
+        String response = nimbus.getResponse("dance now");
+
+        assertTrue(response.contains("command drifted past me"));
+    }
 }
