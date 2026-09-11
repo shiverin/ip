@@ -55,7 +55,7 @@ public class Main extends Application {
         stage.setTitle("Nimbus");
         stage.show();
 
-        addMessage(nimbus.getWelcomeMessage(), false);
+        addMessage(nimbus.getWelcomeMessage(), MessageSender.NIMBUS);
         userInput.requestFocus();
     }
 
@@ -64,29 +64,35 @@ public class Main extends Application {
         if (input.isEmpty()) {
             return;
         }
-        addMessage(input, true);
+        addMessage(input, MessageSender.USER);
         userInput.clear();
         Nimbus.Response response = nimbus.getResponseWithStatus(input);
-        addMessage(response.message(), false);
+        addMessage(response.message(), MessageSender.NIMBUS);
         if (response.isExit()) {
             userInput.setDisable(true);
             Platform.runLater(() -> ((Stage) userInput.getScene().getWindow()).close());
         }
     }
 
-    private void addMessage(String message, boolean isUser) {
+    private void addMessage(String message, MessageSender sender) {
+        boolean isFromUser = sender == MessageSender.USER;
         TextArea bubble = new TextArea(message);
         bubble.setEditable(false);
         bubble.setWrapText(true);
         bubble.setFocusTraversable(false);
         bubble.setMaxWidth(460);
         bubble.setPrefRowCount(Math.max(1, message.lines().toList().size()));
-        bubble.setStyle(isUser
+        bubble.setStyle(isFromUser
                 ? "-fx-control-inner-background: #dbeafe; -fx-font-size: 14px;"
                 : "-fx-control-inner-background: #f3f4f6; -fx-font-size: 14px;");
         HBox row = new HBox(bubble);
-        row.setStyle(isUser ? "-fx-alignment: center-right;" : "-fx-alignment: center-left;");
+        row.setStyle(isFromUser ? "-fx-alignment: center-right;" : "-fx-alignment: center-left;");
         dialogContainer.getChildren().add(row);
+    }
+
+    private enum MessageSender {
+        USER,
+        NIMBUS
     }
 
     /** Starts the JavaFX application. */

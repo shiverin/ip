@@ -97,8 +97,8 @@ public class Nimbus {
     private String execute(ParsedCommand command) throws NimbusException {
         return switch (command.type()) {
             case LIST -> formatTasks("Here are the tasks in your list:", tasks.asList());
-            case MARK -> updateTaskStatus(command.argument(), true);
-            case UNMARK -> updateTaskStatus(command.argument(), false);
+            case MARK -> markTaskAsDone(command.argument());
+            case UNMARK -> markTaskAsNotDone(command.argument());
             case DELETE -> deleteTask(command.argument());
             case UPDATE -> updateTask(command.argument());
             case TODO -> addTodo(command.argument());
@@ -110,15 +110,16 @@ public class Nimbus {
         };
     }
 
-    private String updateTaskStatus(String argument, boolean isDone) throws NimbusException {
+    private String markTaskAsDone(String argument) throws NimbusException {
         Task task = tasks.get(parseTaskNumber(argument));
-        if (isDone) {
-            task.markAsDone();
-            return "Nice! I've marked this task as done:\n  " + task;
-        } else {
-            task.markAsNotDone();
-            return "OK, I've marked this task as not done yet:\n  " + task;
-        }
+        task.markAsDone();
+        return "Nice! I've marked this task as done:\n  " + task;
+    }
+
+    private String markTaskAsNotDone(String argument) throws NimbusException {
+        Task task = tasks.get(parseTaskNumber(argument));
+        task.markAsNotDone();
+        return "OK, I've marked this task as not done yet:\n  " + task;
     }
 
     private String deleteTask(String argument) throws NimbusException {
