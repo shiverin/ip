@@ -1,6 +1,6 @@
 .app-root {
     -fx-background-color: linear-gradient(to bottom right, #f6f9ff, #eef2ff);
-    -fx-font-family: "Avenir Next", "Segoe UI", sans-serif;
+    -fx-font-family: "System";
 }
 
 .header {
@@ -17,15 +17,6 @@
 .app-subtitle, .command-hint {
     -fx-font-size: 11px;
     -fx-text-fill: #71809f;
-}
-
-.status-label {
-    -fx-background-color: #e7f8ef;
-    -fx-background-radius: 14;
-    -fx-padding: 6 10;
-    -fx-text-fill: #237451;
-    -fx-font-size: 12px;
-    -fx-font-weight: bold;
 }
 
 .dialog-scroll-pane, .dialog-scroll-pane > .viewport {

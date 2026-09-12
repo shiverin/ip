@@ -13,7 +13,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -27,14 +26,9 @@ public class Main extends Application {
     public void start(Stage stage) {
         Label title = new Label("Nimbus");
         title.getStyleClass().add("app-title");
-        Label subtitle = new Label("Your calm place for busy days");
+        Label subtitle = new Label("A clear forecast for what's next");
         subtitle.getStyleClass().add("app-subtitle");
-        Region headerSpacer = new Region();
-        HBox.setHgrow(headerSpacer, Priority.ALWAYS);
-        Label status = new Label("●  Ready");
-        status.getStyleClass().add("status-label");
-        VBox titleGroup = new VBox(2, title, subtitle);
-        HBox header = new HBox(12, titleGroup, headerSpacer, status);
+        VBox header = new VBox(2, title, subtitle);
         header.getStyleClass().add("header");
 
         ScrollPane dialogScrollPane = new ScrollPane(dialogContainer);
@@ -57,7 +51,7 @@ public class Main extends Application {
         inputBar.getStyleClass().add("input-bar");
         HBox.setHgrow(userInput, Priority.ALWAYS);
 
-        Label hint = new Label("Try: list  •  todo  •  deadline  •  event  •  find  •  update  •  bye");
+        Label hint = new Label("Commands: list, todo, deadline, event, find, update, bye");
         hint.getStyleClass().add("command-hint");
         VBox composer = new VBox(7, inputBar, hint);
 

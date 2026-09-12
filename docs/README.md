@@ -1,6 +1,6 @@
 # Nimbus User Guide
 
-Nimbus is a calm desktop assistant that keeps todos, deadlines, and events in one local task list.
+Nimbus is a lightweight student task assistant that keeps todos, deadlines, and events in one local list—a clear forecast of what's next.
 
 ![Nimbus desktop interface](Ui.png)
 

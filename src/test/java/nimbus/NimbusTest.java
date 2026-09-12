@@ -33,7 +33,7 @@ class NimbusTest {
 
         String response = nimbus.getResponse("deadline /by 2026-01-01");
 
-        assertEquals("A little turbulence: Use: deadline DESCRIPTION /by YYYY-MM-DD.", response);
+        assertEquals("I couldn't do that: Use: deadline DESCRIPTION /by YYYY-MM-DD.", response);
     }
 
     @Test
@@ -42,7 +42,7 @@ class NimbusTest {
 
         String response = nimbus.getResponse("event /from Monday /to Tuesday");
 
-        assertEquals("A little turbulence: Use: event DESCRIPTION /from START /to END.", response);
+        assertEquals("I couldn't do that: Use: event DESCRIPTION /from START /to END.", response);
     }
 
     @Test
@@ -52,7 +52,7 @@ class NimbusTest {
         Nimbus.Response response = nimbus.getResponseWithStatus("bye now");
 
         assertTrue(response.isExit());
-        assertEquals("The sky is clear for now. See you next time!", response.message());
+        assertEquals("All set for now. See you next time!", response.message());
     }
 
     @Test
@@ -91,7 +91,7 @@ class NimbusTest {
     void getResponse_blankInput_returnsHelpfulError() {
         Nimbus nimbus = new Nimbus(temporaryDirectory.resolve("tasks.txt"));
 
-        assertEquals("A little turbulence: Please type a command.", nimbus.getResponse("   "));
+        assertEquals("Please type a command.", nimbus.getResponse("   "));
     }
 
     @Test
@@ -129,7 +129,7 @@ class NimbusTest {
 
         String response = nimbus.getResponse("deadline submit report /by next Friday");
 
-        assertEquals("A little turbulence: Use a deadline date in YYYY-MM-DD format.", response);
+        assertEquals("I couldn't do that: Use a deadline date in YYYY-MM-DD format.", response);
     }
 
     @Test
@@ -139,7 +139,7 @@ class NimbusTest {
 
         String response = nimbus.getResponse("mark 2");
 
-        assertEquals("A little turbulence: Choose a task number from the list.", response);
+        assertEquals("I couldn't do that: Choose a task number from the list.", response);
     }
 
     @Test

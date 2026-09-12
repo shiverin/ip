@@ -1,6 +1,6 @@
 # Nimbus
 
-Nimbus is a calm desktop task assistant for managing todos, deadlines, and events. It stores your tasks locally and gives clear, friendly feedback through a JavaFX chat interface.
+Nimbus is a lightweight student task assistant for managing todos, deadlines, and events. It gives you a clear forecast of what's next through a focused JavaFX interface.
 
 ![Nimbus desktop interface](docs/Ui.png)
 
